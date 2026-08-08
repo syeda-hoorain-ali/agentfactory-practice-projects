@@ -14,9 +14,9 @@ Turn Project 4's orchestration into one re-runnable unit — then prove it is no
 
 - `calculator.py` — three independent bugs, one per function (`subtract`, `divide`, `is_even`). Independent on purpose: three candidates that can be fixed in three parallel worktrees with zero risk of collision.
 - `test_calculator.py` — 6 tests, 5 failing across the 3 functions (`5 failed, 1 passed`). Each candidate's tests can be run alone with `pytest -q -k <candidate>`.
-- `.claude/agents/reviewer.md` — the checker. Told which candidate it's grading, runs `pyton -m pytest -q -k <candidate>` itself, confirms the diff touches only that one function, replies `PASS`/`FAIL`.
+- `.claude/agents/reviewer.md` — the checker. Told which candidate it's grading, runs `python -m pytest -q -k <candidate>` itself, confirms the diff touches only that one function, replies `PASS`/`FAIL`.
 - `.opencode/agents/reviewer.md` — the same checker, for OpenCode.
-- `fix_body.sh` — the OpenCode version of the body: fans out one maker + one checker per candidate in parallel worktrees, `wait`s on all three, turns each reviewer verdict into that job's exit code.
+- `.opencode/scripts/fix_body.sh` — the OpenCode version of the body: fans out one maker + one checker per candidate in parallel worktrees, `wait`s on all three, turns each reviewer verdict into that job's exit code.
 
 Same monorepo pattern as Project 4: worktrees are created inside the repo, under the already-gitignored `.worktrees/`, prefixed `05-` so they never collide with `01-`, `02-`, `03-`, `04-`'s own worktrees.
 
@@ -49,8 +49,8 @@ Watch it run: three isolated worktrees, three drafts, three reviewer calls, one 
 
 ```bash
 cd loop-engineering/05-codify-the-body
-chmod +x fix_body.sh
-./fix_body.sh
+chmod +x .opencode/scripts/fix_body.sh
+./.opencode/scripts/fix_body.sh
 ```
 
 You should see all three candidates draft and get reviewed in parallel, then a final `RESULT: <candidate> -> PASS/FAIL` line for each. Full verdict text lands in `.worktrees/05-logs/<candidate>.verdict.log`.
@@ -67,7 +67,7 @@ What did the fix-workflow do last time it ran?
 ```
 It shouldn't know. Nothing wrote that down anywhere the new session can read.
 
-**OpenCode:** just look at the script. There's no file it writes to that a second run reads from — `.worktrees/05-logs/*.verdict.log` gets overwritten every run, not appended to or checked first. Run `./fix_body.sh` twice in a row and confirm the second run redoes all three candidates from scratch, exactly like the first — it doesn't know it already fixed `subtract` five minutes ago.
+**OpenCode:** just look at the script. There's no file it writes to that a second run reads from — `.worktrees/05-logs/*.verdict.log` gets overwritten every run, not appended to or checked first. Run `./.opencode/scripts/fix_body.sh` twice in a row and confirm the second run redoes all three candidates from scratch, exactly like the first — it doesn't know it already fixed `subtract` five minutes ago.
 
 **Now name the two things missing, out loud, before you check below:**
 
