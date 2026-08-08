@@ -16,22 +16,28 @@ must stay scoped to that folder — never touch other projects in this repo.
 ## 1. Reproduce
 - Confirm you are in `loop-engineering/04-a-fix-loop-with-a-real-checker/`
   (check with `pwd`; `cd` there first if not).
-- Run `pytest -q` from inside this folder.
+- Run `python -m pytest -q` from inside this folder.
 - Read the failing test and its traceback. Identify the exact bug — not
   just the symptom.
 
 ## 2. Isolate
 - Find the repo root: `git rev-parse --show-toplevel`.
-- Create an isolated worktree as a sibling of the whole repo:
-  `git worktree add <repo-root>/../fix-loop-wt -b fix/<short-slug>`
+- Create the worktree **inside the repo**, under `.worktrees/`, so it
+  never leaks out into the parent folder that holds other repos:
+  `git worktree add <repo-root>/.worktrees/04-fix-loop-wt -b fix/<short-slug>`
   (Run this from anywhere inside the repo — it doesn't need to be from
-  this project's folder.)
+  this project's folder. `.worktrees/` is gitignored at the repo root, so
+  this never gets committed.)
 - A worktree checks out the **entire repo**, not just this project. Your
   real working folder is:
-  `<repo-root>/../fix-loop-wt/loop-engineering/04-a-fix-loop-with-a-real-checker/`
+  `<repo-root>/.worktrees/04-fix-loop-wt/loop-engineering/04-a-fix-loop-with-a-real-checker/`
 - `cd` into that exact path and do all editing there. Never edit the
   original checkout, and never touch any other project folder inside the
   worktree either.
+- The `04-` prefix on the worktree name matters: other numbered projects
+  (`01-`, `02-`, ...) will create their own worktrees under the same
+  `.worktrees/` folder, and each needs a name that won't collide with the
+  others.
 
 ## 3. Fix
 - Inside the worktree's copy of this project folder, make the smallest
