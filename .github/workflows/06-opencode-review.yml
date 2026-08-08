@@ -9,7 +9,10 @@ on:
 jobs:
   review:
     runs-on: ubuntu-latest
-    permissions: { contents: read, pull-requests: read }
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v6
         with: { persist-credentials: false }

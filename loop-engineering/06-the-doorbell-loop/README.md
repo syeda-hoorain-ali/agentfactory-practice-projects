@@ -50,12 +50,22 @@ to:
 ```python
     return items[len(items)]
 ```
+
+Verify it:
+```bash
+python -m pytest -q   # confirm: 2 failed, 2 passed
+```
 Crashes with `IndexError` every time. `test_get_last_multiple` and `test_get_last_single` both catch it.
 
-**Deleted null check** — in `greet.py`, delete this line entirely:
+**Deleted null check** — in `greet.py`, delete these 2 lines entirely:
 ```python
     if user is None:
         return "Hello, stranger!"
+```
+
+Verify it:
+```bash
+python -m pytest -q   # confirm: 3 failed, 1 passed
 ```
 Crashes with `TypeError` the moment `user` is `None`. `test_greet_with_none` catches it.
 
