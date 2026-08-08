@@ -3,7 +3,7 @@
 
 def divide(a, b):
     """Divide a by b and return the result."""
-    return a // b  # bug: integer division truncates the result
+    return a / b
 
 
 def average(numbers):
