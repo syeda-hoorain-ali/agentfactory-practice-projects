@@ -1,0 +1,23 @@
+name: opencode-publish-digest
+
+on:
+  repository_dispatch:
+    types: [approve-publish]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: anomalyco/opencode/github@latest
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: google/gemini-3.5-flash-lite
+          use_github_token: true
+          prompt: "Follow the skill at loop-engineering/11-build-the-two-routine-gate/.opencode/skills/publish-digest/SKILL.md to publish. The approved branch is ${{ github.event.client_payload.branch }}."
