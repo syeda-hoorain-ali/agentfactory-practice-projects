@@ -1,0 +1,23 @@
+name: opencode-dreaming-loop
+on:
+  schedule:
+    - cron: '0 9 * * 1'   # every Monday, 9am UTC
+  workflow_dispatch: {}    # lets you fire it by hand from the Actions tab to test
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  dream:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: anomalyco/opencode/github@latest
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: google/gemini-3.5-flash-lite
+          use_github_token: true
+          prompt: "Follow the skill at loop-engineering/12-build-a-dreaming-loop/.opencode/skills/dreaming-loop/SKILL.md exactly, running all its steps (including analyze_logs.py) from inside that folder."
