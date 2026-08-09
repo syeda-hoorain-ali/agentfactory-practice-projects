@@ -26,32 +26,39 @@ Do not skip the progress file. It is your only memory between runs.
   order and leave the rest for tomorrow's run.
 
 ## 3. Work each file
-- Find the repo root, then create an isolated worktree under the shared
-  `.worktrees/` folder there, on a new branch:
-  ```
-  ROOT=$(git rev-parse --show-toplevel)
-  git worktree add "$ROOT/.worktrees/lint-<short-slug>" -b claude/lint-<short-slug>
-  ```
-  This works whether you are already inside the project folder or at the
-  repo root — the loop must run correctly from both, because a person runs
-  it from the project folder, but GitHub Actions runs it from the repo root.
-- Inside that worktree, the file is still at
-  `loop-engineering/08-your-own-daily-loop/<file>` (a worktree checks out the
-  whole repo, just on a different branch). Fix only what `src/lint_check.py`
-  flagged: add a one-line docstring, remove or comment the `print()`, wrap
-  the long line. Do not change behaviour. Do not touch anything the checker
-  did not flag.
+- Check whether you're running in GitHub Actions: is the `GITHUB_ACTIONS`
+  environment variable set to `true`?
+  - **Yes (CI):** the runner is already a fresh, single-use checkout —
+    nothing else is running alongside you, so a worktree adds nothing.
+    Skip it. Just create and switch to a new branch directly:
+    `git checkout -b claude/lint-<short-slug>`
+  - **No (local):** other sessions might be running at the same time, so
+    isolate yourself in a worktree:
+    ```
+    ROOT=$(git rev-parse --show-toplevel)
+    git worktree add "$ROOT/.worktrees/lint-<short-slug>" -b claude/lint-<short-slug>
+    ```
+- Either way, the file is now at
+  `loop-engineering/08-your-own-daily-loop/<file>` on your new branch. Fix
+  only what `lint_check.py` flagged: add a one-line docstring, remove or
+  comment the `print()`, wrap the long line. Do not change behaviour. Do not
+  touch anything the checker did not flag.
 - Send the diff to the reviewer subagent. Wait for its verdict before going on.
 
 ## 4. Decide from the verdict
-- PASS: leave the fix on its `claude/lint-<short-slug>` branch. Do NOT merge
+- PASS: commit the fix on its `claude/lint-<short-slug>` branch. Do NOT merge
   to `main` yourself — that decision is the human gate. If a GitHub remote is
-  configured and the `gh` CLI is available, open a PR:
-  `gh pr create --head claude/lint-<short-slug> --fill --body "Automated lint fix. lint_check.py: clean. Reviewed by: reviewer subagent (PASS)."`
+  configured and the `gh` CLI is available, push the branch and open a PR:
+  ```
+  git push -u origin claude/lint-<short-slug>
+  gh pr create --head claude/lint-<short-slug> --fill --body "Automated lint fix. lint_check.py: clean. Reviewed by: reviewer subagent (PASS)."
+  ```
   If `gh` is not available, just note the branch name as "ready to merge" in
-  progress.md instead. Either way, remove the worktree working directory
-  afterward (`git worktree remove "$ROOT/.worktrees/lint-<short-slug>"`) —
-  the branch itself stays.
+  progress.md instead.
+  Clean up afterward: if you used a worktree, remove it
+  (`git worktree remove "$ROOT/.worktrees/lint-<short-slug>"` — the branch
+  itself stays). If you were in CI, just switch back
+  (`git checkout main`) — there is no worktree to remove.
 - FAIL: do not open a PR and do not note it as ready. Add a short entry to
   "Open / needs a human" in progress.md saying what was tried and why it
   failed. Leave the worktree in place for a human to inspect.
