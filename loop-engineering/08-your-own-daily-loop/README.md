@@ -23,11 +23,12 @@ Find Python files with mechanical style issues (missing docstrings, leftover `pr
 - `.claude/agents/reviewer.md` — the checker subagent (Claude Code).
 - `.opencode/skills/daily-lint-sweep/SKILL.md` — the same skill, unchanged, for OpenCode.
 - `.opencode/agents/reviewer.md` — the checker subagent (OpenCode).
-- `run_lint_sweep.bat` — Windows Task Scheduler wrapper.
+- `.opencode/scripts/run_lint_sweep.bat` — Windows Task Scheduler wrapper. OpenCode-only — Claude Code Routines don't need a local script at all, the schedule lives on Anthropic's servers.
+- `/.github/workflows/opencode-daily-lint-sweep.yml` — the GitHub Actions workflow (repo root). This is OpenCode's equivalent of a Claude Code Routine: a scheduled cloud run, no machine of yours needs to be on.
 
 ## Before you run it
 
-The skill creates git worktrees at `../../.worktrees/` (the repo root shared by every project), so run everything from inside `loop-engineering/08-your-own-daily-loop/` in a checkout of the full `agentfactory-practice-projects` repo.
+`src/lint_check.py` always scans its own folder — the folder it lives in, `loop-engineering/08-your-own-daily-loop/` — no matter where you invoke it from. That matters because this loop runs two different ways: locally (you `cd` into the project folder first) and from GitHub Actions (which checks out the whole repo and runs everything from the repo root, without `cd`-ing anywhere). Same reason the skill finds the repo root with `git rev-parse --show-toplevel` instead of a relative `../../` path — it has to work from both places.
 
 Confirm the checker works and finds the planted issues before touching a loop:
 
@@ -59,6 +60,14 @@ To turn it into the actual scheduled loop the project asks for:
 opencode run "Run the daily-lint-sweep skill"
 ```
 
+## Heartbeat: GitHub Actions (the real unattended path — do this one)
+
+This is OpenCode's answer to a Claude Code Routine: no machine of yours has to stay on. The workflow lives at the repo root, `.github/workflows/opencode-daily-lint-sweep.yml`, fires daily at 9am UTC on `schedule`, and also has `workflow_dispatch` so you can fire it manually from the Actions tab to test — the GitHub Actions version of a one-off run.
+
+Add a `GEMINI_API_KEY` repository secret, then either wait for 9am UTC or trigger it by hand: **Actions tab → opencode-daily-lint-sweep → Run workflow.** `gh` is preinstalled and pre-authenticated on GitHub-hosted runners via `GITHUB_TOKEN`, so `gh pr create` in the skill fires reliably here — this is the one environment where the connector step never falls back to "just leave a branch."
+
+## Heartbeat: your own machine (alternative — laptop must stay on)
+
 **macOS/Linux — cron**
 
 ```
@@ -68,13 +77,13 @@ opencode run "Run the daily-lint-sweep skill"
 **Windows — Task Scheduler**
 
 ```cmd
-schtasks /create /tn "DailyLintSweep" /tr "C:\path\to\agentfactory-practice-projects\loop-engineering\08-your-own-daily-loop\run_lint_sweep.bat" /sc daily /st 09:00
+schtasks /create /tn "DailyLintSweep" /tr "C:\path\to\agentfactory-practice-projects\loop-engineering\08-your-own-daily-loop\.opencode\scripts\run_lint_sweep.bat" /sc daily /st 09:00
 ```
 
 To test without waiting a full day:
 
 ```cmd
-schtasks /create /tn "DailyLintSweepTest" /tr "C:\path\to\...\run_lint_sweep.bat" /sc minute /mo 5
+schtasks /create /tn "DailyLintSweepTest" /tr "C:\path\to\...\.opencode\scripts\run_lint_sweep.bat" /sc minute /mo 5
 ```
 
 Check `lint-sweep.log` and `progress.md` for new entries every 5 minutes. Stop it once confirmed:
@@ -87,11 +96,13 @@ schtasks /delete /tn "DailyLintSweepTest" /f
 
 ## The connector step, and why it has a fallback
 
-`gh pr create` only fires if this repo has a GitHub remote and an authenticated `gh` CLI. If it doesn't, the skill never merges to `main` on its own either way — it just leaves the fix on a `claude/lint-*` branch and notes it as "ready to merge" in `progress.md`. That's the human gate from Part 5: safe work goes to a branch a person reviews, never straight to `main`.
+On GitHub Actions, `gh` is always available and authenticated — the skill's `gh pr create` step fires every time. Running locally, it depends on whether you've set up `gh` yourself; if not, the skill never merges to `main` on its own either way — it just leaves the fix on a `claude/lint-*` branch and notes it as "ready to merge" in `progress.md`. That's the human gate from Part 5: safe work goes to a branch a person reviews, never straight to `main`.
 
 ## Budget guards (Concept 13, made concrete)
 
 - **Item cap:** never more than 3 files touched in one run.
-- **Scope cap:** never edit anything `lint_check.py` didn't flag — no drive-by refactors.
-- **Cheap checker:** the reviewer runs on `claude-haiku-4-5-20251001`, not the same model doing the fixing.
+- **Scope cap:** never edit anything `src/lint_check.py` didn't flag — no drive-by refactors.
+- **Cheap maker:** the maker runs on `gemini-3.5-flash-lite`, not the same model doing the reviewing.
 - **Merge cap:** the loop itself never merges to `main` — only a human does, so a bad week of runs can't compound unattended.
+
+<!-- schtasks /create /tn "DailyLintSweepTest" /tr "D:\my-projects\agentfactory-practice-projects\loop-engineering\08-your-own-daily-loop\.opencode\scripts\run_lint_sweep.bat" /sc minute /mo 5 -->

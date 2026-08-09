@@ -18,18 +18,29 @@ Do not skip the progress file. It is your only memory between runs.
 - Do not redo anything already listed under "Done" for today's date.
 
 ## 2. Find the work
-- Run `python3 lint_check.py` from this folder.
+- Run `python3 loop-engineering/08-your-own-daily-loop/src/lint_check.py`
+  (it always scans its own folder, regardless of where you run it from — you
+  do not need to `cd` first).
 - Group the output by file. Stop once you have at most 3 files — this run's
   budget guard. If more than 3 files have issues, take the first 3 by path
   order and leave the rest for tomorrow's run.
 
 ## 3. Work each file
-- Create an isolated worktree at the shared repo-root `.worktrees/` folder,
-  on a new branch:
-  `git worktree add ../../.worktrees/lint-<short-slug> -b claude/lint-<short-slug>`
-- In that worktree, fix only what `lint_check.py` flagged for this file: add
-  a one-line docstring, remove or comment the `print()`, wrap the long line.
-  Do not change behaviour. Do not touch anything the checker did not flag.
+- Find the repo root, then create an isolated worktree under the shared
+  `.worktrees/` folder there, on a new branch:
+  ```
+  ROOT=$(git rev-parse --show-toplevel)
+  git worktree add "$ROOT/.worktrees/lint-<short-slug>" -b claude/lint-<short-slug>
+  ```
+  This works whether you are already inside the project folder or at the
+  repo root — the loop must run correctly from both, because a person runs
+  it from the project folder, but GitHub Actions runs it from the repo root.
+- Inside that worktree, the file is still at
+  `loop-engineering/08-your-own-daily-loop/<file>` (a worktree checks out the
+  whole repo, just on a different branch). Fix only what `src/lint_check.py`
+  flagged: add a one-line docstring, remove or comment the `print()`, wrap
+  the long line. Do not change behaviour. Do not touch anything the checker
+  did not flag.
 - Send the diff to the reviewer subagent. Wait for its verdict before going on.
 
 ## 4. Decide from the verdict
@@ -39,8 +50,8 @@ Do not skip the progress file. It is your only memory between runs.
   `gh pr create --head claude/lint-<short-slug> --fill --body "Automated lint fix. lint_check.py: clean. Reviewed by: reviewer subagent (PASS)."`
   If `gh` is not available, just note the branch name as "ready to merge" in
   progress.md instead. Either way, remove the worktree working directory
-  afterward (`git worktree remove ../../.worktrees/lint-<short-slug>`) — the
-  branch itself stays.
+  afterward (`git worktree remove "$ROOT/.worktrees/lint-<short-slug>"`) —
+  the branch itself stays.
 - FAIL: do not open a PR and do not note it as ready. Add a short entry to
   "Open / needs a human" in progress.md saying what was tried and why it
   failed. Leave the worktree in place for a human to inspect.
@@ -51,10 +62,9 @@ Do not skip the progress file. It is your only memory between runs.
 
 ## Rules (budget guards)
 - Never touch more than 3 files in one run.
-- Never edit anything `lint_check.py` did not flag — a lint sweep is not a
+- Never edit anything `src/lint_check.py` did not flag — a lint sweep is not a
   refactor.
 - Never merge to `main` directly. Only `claude/*` branches, and only a human
   merges them.
 - When in doubt, escalate. A flagged file a human checks is always safer than
   a wrong "fix" shipped while no one was watching.
-  

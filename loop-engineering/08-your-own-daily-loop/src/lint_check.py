@@ -8,19 +8,28 @@ Scans Python files for three mechanical issues:
 
 Pure Python, no dependencies, works the same on Windows/macOS/Linux.
 
+Always scans THIS SCRIPT'S OWN FOLDER, never the caller's current directory.
+That matters because this loop runs two ways: locally (you cd into the
+project folder first) and from GitHub Actions (which checks out the whole
+repo and runs from the repo root, without cd-ing anywhere). Pinning the scan
+to the script's own location means both callers scan the same files, and a
+repo with many practice projects never gets cross-scanned by accident.
+
 Usage:
-    python3 lint_check.py                 # scan every .py file in this folder
-    python3 lint_check.py --file app.py   # scan a single file (used by the reviewer)
+    python3 src/lint_check.py                 # scan this project's folder only
+    python3 src/lint_check.py --file app.py   # scan a single file (used by the reviewer)
 """
 import ast
 import sys
 from pathlib import Path
 
+PROJECT_ROOT = Path(__file__).resolve().parent
 SKIP = {"lint_check.py", "__pycache__"}
 MAX_LINE = 100
 
 
-def find_py_files(root="."):
+def find_py_files(root=None):
+    root = root or PROJECT_ROOT
     for path in sorted(Path(root).rglob("*.py")):
         if any(part in SKIP for part in path.parts):
             continue
@@ -59,6 +68,10 @@ def main():
     target = None
     if len(sys.argv) == 3 and sys.argv[1] == "--file":
         target = Path(sys.argv[2])
+        if not target.exists():
+            # caller passed a bare filename ("app.py") from a different cwd
+            # (e.g. the repo root) — resolve it against this project's folder
+            target = PROJECT_ROOT / target.name
 
     files = [target] if target else list(find_py_files())
     all_issues = []

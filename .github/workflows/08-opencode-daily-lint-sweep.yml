@@ -1,0 +1,25 @@
+name: opencode-daily-lint-sweep
+
+on:
+  schedule:
+    - cron: "0 9 * * *"   # every day at 9am UTC
+  workflow_dispatch:        # lets you fire it manually to test, without waiting for 9am
+
+jobs:
+  lint-sweep:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: anomalyco/opencode/github@latest
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: google/gemini-3.5-flash-lite
+          use_github_token: true
+          prompt: "Follow the skill at loop-engineering/08-your-own-daily-loop/.opencode/skills/daily-lint-sweep/SKILL.md and run it."
