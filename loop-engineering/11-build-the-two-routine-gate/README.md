@@ -79,19 +79,6 @@ Once it looks right, leave the `schedule:` cron in the file as-is and it fires d
 
 Same repo secret (`GEMINI_API_KEY`) covers this workflow too — no separate token needed for the workflow itself. What you *do* need to generate and store immediately is a **GitHub personal access token** (fine-grained, scoped to just this repo, `contents: write` + the ability to dispatch): **Settings → Developer settings → Personal access tokens**. Copy it into your own local `.env` (or a password manager) the moment it's shown — GitHub won't show the full value again either. This token plays the same role B's Claude Code bearer token does: it's what lets *you*, the human, fire B on purpose.
 
-### Rehearse locally first
-
-Before wiring the dispatch trigger, prove both prompts the plain way, same as the Claude Code rehearsal:
-
-```bash
-opencode run "run the draft-daily-digest skill"
-```
-```bash
-opencode run "run the publish-digest skill; the approved branch is claude/digest-2026-08-09"
-```
-
-Confirm the same things: B only merges the branch you named, and rejects anything that isn't a real `claude/digest-*` branch.
-
 ### Approve a real draft
 
 1. Read `DIGEST.md` on the branch Routine A's workflow run printed. This is the human gate.
@@ -109,3 +96,4 @@ Open the `opencode-publish-digest` run in **Actions** and confirm the merge actu
 ### A6 checklist, OpenCode version
 
 Repo secrets set, no `.env` committed. Both workflows scoped to `paths: - 'loop-engineering/11-build-the-two-routine-gate/**'` so they never fire on unrelated changes elsewhere in the monorepo-style layout. Branch protection on `main` stands in for "unrestricted pushes off" (A5's OpenCode note: this is a rule you set yourself, not a toggle in a dashboard). State is `progress.md`, committed. Human gate: B's workflow only ever acts on the branch named in `client_payload.branch` — nothing scans for "the latest" branch on its own. Both workflows run once via manual dispatch first, and the run logs read, not just the checkmark.
+
