@@ -1,16 +1,23 @@
 name: opencode-dreaming-loop
+
 on:
   schedule:
     - cron: '0 9 * * 1'   # every Monday, 9am UTC
   workflow_dispatch: {}    # lets you fire it by hand from the Actions tab to test
-permissions:
-  contents: write
-  pull-requests: write
+
 jobs:
   dream:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+  
     steps:
       - uses: actions/checkout@v6
+      - name: Configure git identity
+        run: |
+          git config --global user.name "opencode-bot"
+          git config --global user.email "opencode-bot@users.noreply.github.com"
       - uses: anomalyco/opencode/github@latest
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
