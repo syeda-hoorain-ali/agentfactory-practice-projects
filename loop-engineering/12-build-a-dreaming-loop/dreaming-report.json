@@ -1,0 +1,25 @@
+{
+  "run_date": "2026-08-10",
+  "since_date": "2026-08-10",
+  "sources_scanned": [
+    "../03-the-morning-brief-with-a-memory/progress.md",
+    "../08-your-own-daily-loop/progress.md"
+  ],
+  "entries_scanned": 0,
+  "repeated_issues": [],
+  "rules_file": "CLAUDE.md",
+  "unused_rule_candidates": [
+    {
+      "tag": "morning-brief-scope",
+      "rule_line": "[morning-brief-scope] The morning-brief skill only reports TODOs and commits from the last 24 hours."
+    },
+    {
+      "tag": "env-vars",
+      "rule_line": "[env-vars] Credentials are available as environment variables; do not look for a `.env` file."
+    },
+    {
+      "tag": "commit-style",
+      "rule_line": "[commit-style] Keep commit messages under 72 characters on the summary line."
+    }
+  ]
+}
