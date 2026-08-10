@@ -35,7 +35,8 @@ Just append one line to `dreaming-state.md` under `## Dream Log`:
 - YYYY-MM-DD: nothing repeated since last dream, no PR opened.
 ```
 
-Then update `last_dream_date` to today's date and stop.
+Then update `last_dream_date` to today's date and push it to main branch
+with this commit message "dreaming loop: nothing repeated since last dream".
 
 ## Step 3 — Draft the smallest fix, per repeated issue
 
@@ -118,3 +119,10 @@ Then update `last_dream_date` to today's date, so the next dream only reads
 what's new. This last edit happens on `main` directly (it's bookkeeping
 about the loop itself, not the codebase) — commit it separately from the
 PR branch.
+
+```
+git checkout main
+git add dreaming-state.md
+git commit -m "dreaming loop: update last_dream_date after dream on $(date +%Y-%m-%d)"
+git push
+```
