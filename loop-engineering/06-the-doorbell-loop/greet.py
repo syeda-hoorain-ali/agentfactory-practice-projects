@@ -9,11 +9,9 @@ from typing import Optional
 
 def get_last(items: list) -> object:
     """Return the last item in the list."""
-    return items[len(items) - 1]
+    return items[len(items)]
 
 
 def greet(user: Optional[dict]) -> str:
     """Return a greeting for user, or a generic one if user is missing."""
-    if user is None:
-        return "Hello, stranger!"
     return f"Hello, {user['name']}!"
