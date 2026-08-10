@@ -11,13 +11,13 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v6
-      - uses: anomalyco/opencode/github@latest
+
+      - name: Install opencode
+        run: npm install -g opencode-ai
+
+      - name: Run publish-digest skill
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          model: google/gemini-3.5-flash-lite
-          use_github_token: true
-          prompt: "Follow the skill at loop-engineering/11-build-the-two-routine-gate/.opencode/skills/publish-digest/SKILL.md to publish. The approved branch is ${{ github.event.client_payload.branch }}."
+        run: |
+          opencode run --model google/gemini-3.5-flash-lite "Follow the skill at loop-engineering/11-build-the-two-routine-gate/.opencode/skills/publish-digest/SKILL.md to publish. The approved branch is ${{ github.event.client_payload.branch }}."
