@@ -1,3 +1,3 @@
-# Daily Digest - 2026-08-09
+# Daily Digest - 2026-08-15
 
-- Zero commits recorded yesterday (2026-08-09).
+- docs: update progress log for daily lint sweep on 2026-08-15
