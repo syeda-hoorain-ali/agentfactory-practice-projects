@@ -2,8 +2,8 @@ name: opencode-draft-digest
 
 on:
   workflow_dispatch:      # one-off test, like Run now
-  schedule:
-    - cron: "0 9 * * *"
+  # schedule:
+  #   - cron: "0 9 * * *"
 
 jobs:
   draft:

@@ -1,8 +1,8 @@
 name: opencode-daily-lint-sweep
 
 on:
-  schedule:
-    - cron: "0 9 * * *"   # every day at 9am UTC
+  # schedule:
+  #   - cron: "0 9 * * *"   # every day at 9am UTC
   workflow_dispatch:        # lets you fire it manually to test, without waiting for 9am
 
 jobs:
